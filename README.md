@@ -1,5 +1,8 @@
 # FoodLens SG
 
+[![CI](https://github.com/Jeffreyliu0131/foodlens-sg/actions/workflows/ci.yml/badge.svg)](https://github.com/Jeffreyliu0131/foodlens-sg/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-d9471f.svg)](LICENSE)
+
 FoodLens SG is a search-first, cross-platform restaurant decision agent for Singapore.
 
 Give it a location and a natural-language food need. It searches the public web, structures branch-level evidence, reconciles identities, evaluates evidence quality, ranks candidates against the current request, and answers:
@@ -98,7 +101,7 @@ Requirements:
 - one OpenRouter or OpenAI API key
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Jeffreyliu0131/foodlens-sg.git
 cd foodlens-sg
 npm install
 ```
@@ -299,6 +302,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). New providers must produce the same sou
 ## Project status and provenance
 
 - Status: OpenRouter and OpenAI single-key product paths implemented; live-provider E2E pending real keys
+- Public repository: https://github.com/Jeffreyliu0131/foodlens-sg
 - Started: 2026-09-01
 - Geography: Singapore
 - Persistent restaurant database: none
