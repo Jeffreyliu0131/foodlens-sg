@@ -4,6 +4,8 @@
 
 FoodLens SG is a request-scoped research pipeline, not a restaurant database and not a single giant model prompt.
 
+The system starts from an incentive-alignment constraint: a delivery platform's ranked feed is an input source, not the user's decision objective and not an independent truth source. FoodLens therefore discovers beyond one feed, preserves source-level evidence, and ranks only after applying the user's current intent. This is a product hypothesis about opaque ranking incentives, not a claim that any platform has been proven to manipulate recommendations.
+
 ```text
 Request
   -> Intent extraction

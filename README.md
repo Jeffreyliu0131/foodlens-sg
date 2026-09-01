@@ -9,6 +9,26 @@ Give it a location and a natural-language food need. It searches the public web,
 
 > Where should I order from, and what should I order?
 
+## Why FoodLens exists
+
+> A delivery platform's ranking objective and a diner's decision objective are not necessarily the same.
+
+Delivery apps make ordering convenient, but the feed they present is an opaque decision surface. A restaurant may appear because it is available, promoted, commercially prioritized, familiar from a previous order, or predicted to convert well. From the outside, the user cannot easily tell how much a ranking reflects **the best fit for this meal** versus the platform's own operating objectives.
+
+The user experience can become repetitive: the same familiar restaurants keep returning, discovering a new option takes work, and an unfamiliar restaurant feels risky. To make one confident choice, the user leaves the delivery app and manually checks Google-related reputation, review volume, the Foodpanda listing, menu items, prices, branch identity, and whether different sources tell a consistent story.
+
+FoodLens turns that workaround into a product:
+
+```text
+Broader discovery beyond one ranked feed
+  -> cross-platform reputation and review-volume checks
+  -> branch and menu verification
+  -> matching against the user's current intent
+  -> one evidence-backed restaurant and dish decision
+```
+
+The goal is not to prove that every delivery platform manipulates recommendations, or that a cross-platform rating is objective truth. The product hypothesis is narrower: **when ranking incentives are opaque, users need an independent decision layer optimized for their stated intent, discovery needs, and inspectable evidence.**
+
 ![FoodLens SG first-run setup with OpenRouter and OpenAI single-key choices](docs/assets/foodlens-provider-setup.jpg)
 
 The first-run experience exposes only two choices: OpenRouter or OpenAI. Each path needs one provider key and enables web search automatically.
@@ -17,22 +37,9 @@ The first-run experience exposes only two choices: OpenRouter or OpenAI. Each pa
 
 The screenshot uses the repository's explicitly labeled, dated fixture. It demonstrates the interface and deterministic pipeline, not current restaurant advice.
 
-## Why it exists
-
-A restaurant decision is often scattered across several surfaces:
-
-- discovery and distance;
-- Google reputation and review volume;
-- Foodpanda presence and delivery signals;
-- menus, prices, and desired dishes;
-- branch names that differ across sources;
-- personal constraints that change from one order to the next.
-
-The user still has to reconcile those facts and make the decision. FoodLens treats the value as **decision compression**, not another long restaurant list.
-
 ## Real-world origin
 
-The idea came from a Thai delivery decision near Pasir Panjang. The original workflow involved discovering candidates, comparing Google and Foodpanda ratings and review volume, matching differently named branches, inspecting menus, and finally choosing both a restaurant and a dish.
+The idea came from a Thai delivery decision near Pasir Panjang. The problem was not a lack of restaurants; it was escaping a narrow set of familiar recommendations without losing confidence. The original workflow involved discovering broader candidates, comparing Google and Foodpanda ratings and review volume, matching differently named branches, inspecting menus, and finally choosing both a restaurant and a dish.
 
 That workflow became the V0 thesis:
 
@@ -275,6 +282,7 @@ docs/            architecture, evaluation, risk review, and UI asset
 - Remote hosting must use HTTPS. The in-memory session store is not horizontally scalable.
 - Natural-language intent extraction and evidence extraction can still be wrong.
 - The rating and ranking formulas are product heuristics, not objective restaurant quality measurements.
+- The incentive mismatch described above is a product hypothesis grounded in the originating user experience. This repository does not prove commercial bias, exclusive-deal influence, or recommendation manipulation by any platform.
 - No live OpenAI or OpenRouter E2E result is claimed until `npm run eval:live` is actually run with a valid key.
 
 ## Non-goals
