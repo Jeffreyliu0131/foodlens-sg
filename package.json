@@ -1,0 +1,43 @@
+{
+  "name": "foodlens-sg",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A search-first, evidence-grounded restaurant decision agent for Singapore.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n WEB,API -c blue,green \"vite\" \"node --import tsx --watch src/server/index.ts\"",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run build:web && npm run build:node",
+    "build:web": "vite build",
+    "build:node": "tsup",
+    "start": "node dist-node/server.js",
+    "cli": "node --import tsx src/cli.ts",
+    "eval:fixture": "node --import tsx evals/run-fixture-eval.ts",
+    "eval:live": "node --import tsx evals/run-live-eval.ts"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "openai": "^7.8.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.5",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}

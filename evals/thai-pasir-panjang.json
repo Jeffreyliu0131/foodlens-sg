@@ -1,0 +1,20 @@
+{
+  "id": "thai-pasir-panjang",
+  "description": "Original FoodLens SG restaurant-decision scenario.",
+  "input": {
+    "location": "Pasir Panjang, Singapore",
+    "query": "I want Thai food delivery around SGD 30 or below. I care about restaurants with strong reputation across Google and Foodpanda, and review count matters. I like savory, strongly flavored food and am particularly interested in Pad See Ew or basil pork."
+  },
+  "historicalContextOnly": [
+    "Super Thai by Soi Aroy",
+    "Nana Original Thai Food",
+    "Esarn Thai Corner",
+    "Go-Ang Pratunam Chicken Rice"
+  ],
+  "thresholds": {
+    "minimumResolvedCandidates": 4,
+    "minimumObservedSources": 4,
+    "maximumUnsupportedRecommendationClaims": 0
+  },
+  "warning": "Historical names are recall context only. They must never be injected into production discovery or used as a fixed expected ranking."
+}
