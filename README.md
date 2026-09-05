@@ -59,7 +59,7 @@ The core stages remain visible in the code and in the operational research trace
 - A first-run setup lets the user choose OpenRouter or OpenAI, enter one provider key, and start without editing environment files.
 - Deterministic code validates source membership, resolves branches, measures evidence confidence, applies preference weights, and checks final evidence IDs.
 - A second search pass investigates only the strongest finalists.
-- The final decision exposes clickable sources, uncertain matches, warnings, search actions, latency, and token usage.
+- The final decision is rendered from observed fields without a synthesis model call and exposes clickable sources, uncertain matches, warnings, search actions, latency, and token usage.
 
 See [Architecture](docs/ARCHITECTURE.md), [Evaluation](docs/EVALUATION.md), and the [Build Risk Review](docs/BUILD_RISK_REVIEW.md).
 
@@ -98,6 +98,10 @@ A Foodpanda listing normally establishes only `listing_found`. A page-level `CLO
 Each accepted record must use a URL found in a search action or URL citation. If the extracted URL was not observed, the record is rejected and reported in the trace.
 
 This guard proves retrieval provenance, not source correctness. Sources can still be stale, incomplete, or wrong.
+
+## Credential-free review
+
+Run `npm ci` and `npm run demo` to inspect the explicitly dated fixture without a provider key. The fixture has restaurant listings but no verified address eligibility, so the current decision correctly abstains. Tests also cover an eligible synthetic path. Historical result screenshots below predate the stricter eligibility gate; the runnable demo is the current behavior.
 
 ## Quick start
 
@@ -319,3 +323,11 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). New providers must produce the same sou
 The product problem, original scenario, V0 thesis, requirements, and evaluation intent came from the user's real decision and product brief. Codex implemented the initial repository under that brief.
 
 The existence of this artifact does not by itself prove independent product or engineering capability. That requires the user's later explanation, modification, debugging, test ownership, and real-world validation.
+
+## Audit follow-through · 2026-09-05
+
+Completed: explicit eligibility before final recommendations, unsupported hard-constraint abstention, per-dish name matching, and field-template rendering that ignores generated summaries/verdicts/reasons. The original listing-only fixture now tests abstention; a separate synthetic test verifies eligible recommendations and no composer call. Source membership still does not prove extraction correctness or freshness.
+
+The product focus remains one verified restaurant/dish decision. Next: compare manual search, a general AI assistant and FoodLens on matched Singapore meal tasks. Randomize method order and freeze each task's time/location/constraints. Human reviewers verify restaurant identity, current menu, eligibility and selected claims from the observed sources. Record time to a usable decision, constraint failures, unverifiable claims, task failures, provider calls/tokens and reported billing when available. Do not equate a client token estimate with billed cost. No participant results or live-provider quality are claimed; execution needs authorized participants/provider use.
+
+Local verification on 2026-09-05: TypeScript, 24 regression/unit tests, web/Node builds and the fixture abstention eval passed. Live provider calls and comparative user trials were not run.

@@ -24,10 +24,8 @@ const checks = {
   minimumResolvedCandidates: packet.restaurants.length >= 4,
   minimumObservedSources: packet.sources.length >= 4,
   noUnsupportedRecommendationClaims: unsupportedRecommendationClaims.length === 0,
-  decisiveTopChoice: packet.recommendations[0]?.rank === 1,
-  desiredDishGrounded: packet.recommendations.some((option) =>
-    option.recommendedDishes.some((dish) => /pad see ew|basil/i.test(dish.name)),
-  ),
+  abstainsOnUnverifiedDelivery: packet.recommendations.length === 0,
+  explainsMissingEligibility: packet.warnings.some(w => w.includes("eligibility is unverified")),
   fullPipelineTrace: [
     "intent",
     "planning",

@@ -19,7 +19,8 @@
     "start": "node dist-node/server.js",
     "cli": "node --import tsx src/cli.ts",
     "eval:fixture": "node --import tsx evals/run-fixture-eval.ts",
-    "eval:live": "node --import tsx evals/run-live-eval.ts"
+    "eval:live": "node --import tsx evals/run-live-eval.ts",
+    "demo": "FOODLENS_PROVIDER=fixture npm run dev"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

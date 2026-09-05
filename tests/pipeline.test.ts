@@ -16,11 +16,9 @@ describe("Thai Pasir Panjang fixture pipeline", () => {
     });
 
     expect(packet.restaurants.length).toBeGreaterThanOrEqual(4);
-    expect(packet.recommendations[0]?.rank).toBe(1);
-    expect(packet.recommendations[0]?.restaurantName).toBeTruthy();
-    expect(packet.recommendations[0]?.recommendedDishes.some((dish) =>
-      /pad see ew|basil/i.test(dish.name),
-    )).toBe(true);
+    // The dated fixture proves listing presence, not exact-address delivery.
+    expect(packet.recommendations).toEqual([]);
+    expect(packet.warnings.some(w => w.includes("eligibility is unverified"))).toBe(true);
     expect(packet.metrics.rejectedRecordCount).toBe(0);
     expect(packet.identityMatches.some((match) => match.decision === "uncertain")).toBe(
       true,
@@ -48,4 +46,16 @@ describe("Thai Pasir Panjang fixture pipeline", () => {
       expect(packet.trace.some((event) => event.stage === stage)).toBe(true);
     }
   });
+});
+
+
+it("renders eligible synthetic options without calling the untrusted composer", async () => {
+  const fixture = structuredClone(thaiPasirPanjangFixture);
+  fixture.intent.deliveryRequired = false;
+  fixture.intent.hardConstraints = [];
+  const provider = new FixtureProvider(fixture);
+  provider.compose = async () => { throw new Error("Composer must not be called"); };
+  const packet = await runFoodLens(thaiPasirPanjangRequest, { intentModel: provider, searchProvider: provider, provider: { kind: "fixture", model: "synthetic-no-delivery" } });
+  expect(packet.recommendations.length).toBeGreaterThan(0);
+  expect(packet.recommendations[0].rank).toBe(1);
 });

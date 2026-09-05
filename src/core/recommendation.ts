@@ -1,3 +1,4 @@
+import { hasHardBudget } from "./constraints";
 import type { ComposedRecommendation, Intent } from "../shared/schemas";
 import type {
   EvidenceClaim,
@@ -27,7 +28,11 @@ function fallbackDishes(
   const menu = evidenceForEntity(evidence, item.entityId).filter(
     (claim) => claim.kind === "menu_item",
   );
+  const hardBudget = hasHardBudget(intent);
   return menu
+    .filter(claim => !hardBudget || item.restaurant.records.some(record =>
+      record.menuItems.some(dish => normalizeText(dish.name) === normalizeText(claim.value.split(" | ")[0] ?? "") &&
+        dish.priceSgd !== null && dish.priceSgd <= intent.budgetSgdMax!)))
     .map((claim) => {
       const name = claim.value.split(" | ")[0]?.trim() || claim.value;
       const desired = Math.max(
@@ -46,7 +51,7 @@ function fallbackDishes(
       reason:
         intent.desiredDishes.some((dish) => nameSimilarity(name, dish) >= 0.62)
           ? "This matches a dish you explicitly requested."
-          : "This grounded menu item best matches the available preference evidence.",
+          : "This menu item was observed in the cited source; check the current menu and price.",
       evidenceIds: [claim.evidenceId],
     }));
 }
@@ -83,109 +88,27 @@ function fallbackOption(
   };
 }
 
-function dishIsGrounded(
-  dishName: string,
-  evidenceIds: string[],
-  evidenceById: Map<string, EvidenceClaim>,
-  entityId: string,
-): boolean {
-  const cited = evidenceIds
-    .map((id) => evidenceById.get(id))
-    .filter(
-      (claim): claim is EvidenceClaim =>
-        Boolean(claim && claim.entityId === entityId && claim.kind === "menu_item"),
-    );
-  return cited.some((claim) => {
-    const observedName = claim.value.split(" | ")[0] ?? claim.value;
-    return (
-      normalizeText(claim.value).includes(normalizeText(dishName)) ||
-      nameSimilarity(observedName, dishName) >= 0.62
-    );
-  });
-}
-
+// Generated prose cannot be validated by citation membership alone. Public copy
+// is rendered from deterministic fields; the legacy composer argument is ignored.
 export function finalizeRecommendation(
   ranked: RankedRestaurant[],
   evidence: EvidenceClaim[],
   intent: Intent,
   composed?: ComposedRecommendation,
 ): FinalizedRecommendation {
-  if (ranked.length === 0) {
-    return {
-      decisionSummary:
-        "No grounded restaurant decision could be made from the retrieved public evidence.",
-      options: [],
-      warnings: ["No grounded candidates were available after source validation."],
-    };
-  }
-
-  const top = ranked.slice(0, 3);
-  const evidenceById = new Map(evidence.map((claim) => [claim.evidenceId, claim]));
-  const composedByEntity = new Map(
-    (composed?.options ?? []).map((option) => [option.entityId, option]),
+  const eligible = ranked.filter(item => item.hardConstraintFailures.length === 0);
+  const warnings = ranked.flatMap(item => item.hardConstraintFailures.map(
+    reason => `${item.restaurant.displayName}: ${reason}`,
+  ));
+  if (composed) warnings.push("Generated recommendation prose was discarded; verified field templates were used.");
+  const options = eligible.slice(0, 3).map((item, index) =>
+    fallbackOption({ ...item, rank: index + 1 }, evidence, intent),
   );
-  const warnings: string[] = [];
-
-  const options = top.map((item) => {
-    const candidate = composedByEntity.get(item.entityId);
-    if (!candidate) {
-      if (composed) {
-        warnings.push(
-          `The generated explanation omitted ${item.restaurant.displayName}; deterministic copy was used.`,
-        );
-      }
-      return fallbackOption(item, evidence, intent);
-    }
-
-    const validCitations = candidate.citedEvidenceIds.filter((id) => {
-      const claim = evidenceById.get(id);
-      return claim?.entityId === item.entityId;
-    });
-    const recommendedDishes = candidate.recommendedDishes.filter((dish) => {
-      const grounded = dishIsGrounded(
-        dish.name,
-        dish.evidenceIds,
-        evidenceById,
-        item.entityId,
-      );
-      if (!grounded) {
-        warnings.push(
-          `Discarded an ungrounded dish recommendation for ${item.restaurant.displayName}: ${dish.name}.`,
-        );
-      }
-      return grounded;
-    });
-
-    if (validCitations.length === 0) {
-      warnings.push(
-        `The generated explanation for ${item.restaurant.displayName} had no valid evidence IDs; deterministic copy was used.`,
-      );
-      return fallbackOption(item, evidence, intent);
-    }
-
-    return {
-      rank: item.rank,
-      entityId: item.entityId,
-      restaurantName: item.restaurant.displayName,
-      branch: item.restaurant.branch,
-      verdict: candidate.verdict,
-      fitExplanation: candidate.fitExplanation,
-      confidence: item.restaurant.evidenceConfidence,
-      recommendedDishes:
-        recommendedDishes.length > 0
-          ? recommendedDishes
-          : fallbackDishes(item, evidence, intent),
-      citedEvidenceIds: validCitations,
-      uncertainties: [...new Set([...candidate.uncertainties, ...item.warnings])],
-      componentScores: item.components,
-    } satisfies RecommendationOption;
-  });
-
   return {
-    decisionSummary:
-      composed?.decisionSummary ||
-      `${options[0].restaurantName} is the best supported match for this request.`,
+    decisionSummary: options.length > 0
+      ? `${options[0].restaurantName} is the best supported match among the eligible candidates.`
+      : "No verified option meets the hard constraints. Check the missing evidence or explicitly relax your request.",
     options,
-    warnings: [...new Set([...(composed?.globalWarnings ?? []), ...warnings])],
+    warnings: [...new Set(warnings)],
   };
 }

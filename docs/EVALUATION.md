@@ -56,8 +56,8 @@ Fixture success means:
 - at least four candidates survive resolution;
 - at least four observed sources exist;
 - no recommendation cites a missing evidence ID;
-- a top option exists;
-- a desired dish is grounded;
+- the listing-only fixture returns no eligible recommendation;
+- the eligibility gap is explained; a separate fully synthetic positive test verifies a top option;
 - the operational trace covers broad search, grounding, resolution, finalist research, final ranking, and recommendation.
 
 Fixture success does not mean the restaurants, ratings, menus, prices, or ranking are current.
@@ -120,3 +120,7 @@ On 2026-09-01:
 - The OpenRouter/OpenAI chooser, provider-specific model defaults, password input clearing, invalid-key errors, and session-only security copy were visually and interactively tested. A provider authentication error that echoed a partial key was found during QA and replaced with fully generic text.
 - `npm audit --omit=dev` reported zero production vulnerabilities. The full development tree reported one low-severity `esbuild 0.27.7` advisory affecting a high-condition Windows local development-server path. Current Vite still constrains the affected minor, so no force override was applied.
 - Live OpenAI and OpenRouter E2E runs were not executed because no real provider keys were present in the environment. OpenRouter protocol behavior was verified with mocked official response shapes.
+
+## 2026-09-05 regression acceptance
+
+A delivery-unavailable, over-budget candidate must not be recommended. Unknown delivery must abstain; verified synthetic eligibility must pass. A single matching dish must not satisfy unrelated requested dishes. Valid citation IDs must not authorize invented free text. All-required-failure warnings stay visible and the user must explicitly change the request before constraints relax. Live comparative validation is specified in README and has not run.

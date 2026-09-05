@@ -1,3 +1,4 @@
+import { hasHardBudget, isBudgetConstraint } from "./constraints";
 import type { Intent, PreferenceWeights } from "../shared/schemas";
 import type {
   ComponentKey,
@@ -131,8 +132,7 @@ function menuComponent(
     for (const dish of intent.desiredDishes) {
       const normalizedDish = normalizeText(dish);
       if (
-        item.desiredDishMatch ||
-        itemText.includes(normalizedDish) ||
+        normalizeText(item.name).includes(normalizedDish) ||
         nameSimilarity(item.name, dish) >= 0.64
       ) {
         desiredMatches.add(dish);
@@ -189,7 +189,7 @@ function deliveryComponent(
   );
   const known = hasListing || states.some((state) => state !== "unknown");
   const failure =
-    intent.deliveryRequired && states.every((state) => state === "unavailable")
+    intent.deliveryRequired && states.includes("unavailable")
       ? "Grounded evidence says delivery is unavailable."
       : null;
   const warning =
@@ -227,7 +227,6 @@ function priceComponent(
       if (item.priceSgd === null) return [];
       if (intent.desiredDishes.length === 0) return [item.priceSgd];
       const relevant =
-        item.desiredDishMatch ||
         intent.desiredDishes.some((dish) => nameSimilarity(item.name, dish) >= 0.62);
       return relevant ? [item.priceSgd] : [];
     });
@@ -275,9 +274,7 @@ function priceComponent(
   const affordable = prices.filter((price) => price <= budget);
   const minimum = Math.min(...prices);
   const score = affordable.length > 0 ? 95 : clamp(70 - ((minimum - budget) / budget) * 100);
-  const budgetIsHard = intent.hardConstraints.some((constraint) =>
-    /budget|price|cost|under|below/i.test(constraint),
-  );
+  const budgetIsHard = hasHardBudget(intent);
   const failure =
     budgetIsHard && affordable.length === 0
       ? `No observed price was within the S$${budget} hard budget.`
@@ -380,7 +377,24 @@ export function rankRestaurants(
       locationComponent(restaurant, intent, evidence),
     ];
     const byKey = componentMap(components);
-    const hardConstraintFailures = [delivery.failure, price.failure].filter(
+    const eligibilityFailures: string[] = [];
+    if (intent.deliveryRequired && !restaurant.records.some(record =>
+      record.deliveryState === "exact_address_eligible" || record.deliveryState === "eta_known")) {
+      eligibilityFailures.push("Exact-address delivery eligibility is unverified; confirm it before ordering.");
+    }
+    for (const constraint of intent.hardConstraints) {
+      if (/^(delivery is required\.?|delivery required\.?|must deliver|配送|必须配送)$/i.test(constraint.trim()) && intent.deliveryRequired) continue;
+      if (isBudgetConstraint(constraint) && intent.budgetSgdMax !== null) {
+        if (price.component.label === "unknown" || intent.budgetBasis !== "per_person" ||
+            !restaurant.records.some(record => record.menuItems.some(item => item.priceSgd !== null && item.priceSgd <= intent.budgetSgdMax! &&
+              (intent.desiredDishes.length === 0 || intent.desiredDishes.some(dish => nameSimilarity(item.name, dish) >= 0.62))))) {
+          eligibilityFailures.push("The hard budget cannot be verified from comparable per-person menu prices; order totals and fees remain unknown.");
+        }
+        continue;
+      }
+      eligibilityFailures.push(`Hard constraint requires manual verification: ${constraint}`);
+    }
+    const hardConstraintFailures = [delivery.failure, price.failure, ...eligibilityFailures].filter(
       (value): value is string => Boolean(value),
     );
     const warnings = [

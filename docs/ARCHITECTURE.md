@@ -85,7 +85,7 @@ This is a local-first V0, not a durable hosted secret vault. Remote hosting requ
 | Claim validation | Deterministic | A cited URL must have been observed by the provider |
 | Entity resolution | Deterministic rules with explicit uncertainty | Reproducible branch matching is safer than silent model merging |
 | Preliminary and final ranking | Deterministic | Preference changes should produce explainable score changes |
-| Final explanation | Model constrained to validated evidence IDs | Natural language helps with concise decision communication |
+| Final explanation | Deterministic templates from observed fields | Citation membership cannot validate arbitrary model prose; no synthesis call |
 | Output validation | Deterministic | No recommendation may cite a missing evidence ID |
 
 ## Request contract
@@ -194,3 +194,9 @@ The historical restaurant names in the Thai scenario appear only in eval expecta
 ## Explicit non-goals
 
 No accounts, checkout, ordering, restaurant database, private API reverse engineering, anti-bot scraping, CAPTCHA bypass, browser automation, vector database, multi-country support, or dedicated platform integrations are part of V0.
+
+## Eligibility revision · 2026-09-05
+
+Final recommendations exclude every candidate with hard-constraint failures. Delivery-required decisions need an observed exact-address eligibility or ETA state and no unavailable conflict. Missing eligibility is a no-decision state, not a weaker winning option. Hard per-person budgets need comparable menu prices; whole-order totals/fees and unsupported free-text constraints require manual verification. These conservative V0 limits are explicit until richer typed constraint adapters exist. Unknown candidates may still receive finalist research; only the final output is gated.
+
+`desiredDishMatch` is legacy provider metadata and is not trusted by ranking. Matching is per requested dish against observed item names. Generated summary/verdict/reason strings are not displayed, even with valid citation IDs.

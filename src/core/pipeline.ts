@@ -267,36 +267,12 @@ export async function runFoodLens(
     }),
   );
 
-  let composed: Awaited<ReturnType<typeof dependencies.intentModel.compose>> | undefined;
-  if (finalState.ranked.length > 0) {
-    composed = await trace.step(
-      "recommendation",
-      "Writing a concise decision from validated evidence IDs.",
-      {},
-      () =>
-        dependencies.intentModel.compose(
-          {
-            request,
-            intent,
-            ranked: finalState.ranked,
-            evidence: finalState.evidence,
-          },
-          options.signal,
-        ),
-      () => ({
-        summary: "Grounded recommendation copy generated.",
-        details: {},
-      }),
-    );
-    modelCalls += composed.modelCalls;
-    addUsage(totalUsage, composed.usage);
-  }
+  await trace.note("recommendation", "completed", "Rendering a decision from verified fields; no synthesis model call.", {});
 
   const finalized = finalizeRecommendation(
     finalState.ranked,
     finalState.evidence,
     intent,
-    composed?.recommendation,
   );
   const sources = uniqueSources(allSources);
   const warnings = [

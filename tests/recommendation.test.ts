@@ -51,7 +51,7 @@ describe("recommendation grounding", () => {
     expect(finalized.options[0].recommendedDishes.map((dish) => dish.name)).toEqual([
       "Pad See Ew",
     ]);
-    expect(finalized.warnings.some((warning) => warning.includes("Lobster Thermidor"))).toBe(
+    expect(finalized.warnings.some((warning) => warning.includes("discarded"))).toBe(
       true,
     );
   });
